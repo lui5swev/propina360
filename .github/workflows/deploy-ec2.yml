@@ -57,15 +57,25 @@ jobs:
 
       - name: Prepare SSH
         run: |
+          set -euo pipefail
           install -m 700 -d ~/.ssh
           printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
+
           if ! grep -qE -- '-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----' ~/.ssh/ec2_key; then
             echo "::error::EC2_SSH_KEY debe incluir el contenido completo del archivo .pem, incluyendo BEGIN/END PRIVATE KEY."
             exit 1
           fi
-          ssh-keygen -y -f ~/.ssh/ec2_key > /dev/null
-          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+          if ! ssh-keygen -y -f ~/.ssh/ec2_key > /dev/null; then
+            echo "::error::EC2_SSH_KEY no es una llave privada SSH valida. Revisa que el secret no tenga texto extra, comillas, prompts de terminal ni saltos de linea perdidos."
+            exit 1
+          fi
+
+          if ! timeout 15 ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts; then
+            echo "::error::No se pudo leer el host key de EC2. Revisa EC2_HOST, que la instancia este encendida y que el Security Group permita TCP 22."
+            exit 1
+          fi
 
       - name: Prepare runtime environment
         run: |
