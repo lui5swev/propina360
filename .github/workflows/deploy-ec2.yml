@@ -14,6 +14,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
 
@@ -27,6 +28,34 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Validate deployment secrets
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          PROPINA360_SIGNING_KEY: ${{ secrets.PROPINA360_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+
+          test -n "$EC2_HOST" || { echo "::error::Missing required secret EC2_HOST"; exit 1; }
+          test -n "$EC2_USER" || { echo "::error::Missing required secret EC2_USER"; exit 1; }
+          test -n "$EC2_SSH_KEY" || { echo "::error::Missing required secret EC2_SSH_KEY"; exit 1; }
+          test -n "$PROPINA360_SIGNING_KEY" || { echo "::error::Missing required secret PROPINA360_SIGNING_KEY"; exit 1; }
+
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+
+          if ! grep -qE -- '-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----' ~/.ssh/ec2_key; then
+            echo "::error::EC2_SSH_KEY must contain the full private key, including BEGIN/END PRIVATE KEY lines."
+            exit 1
+          fi
+
+          if ! ssh-keygen -y -f ~/.ssh/ec2_key > /dev/null; then
+            echo "::error::EC2_SSH_KEY is not a valid private SSH key. Check line breaks and remove extra quotes or terminal prompts."
+            exit 1
+          fi
 
       - name: Run backend tests
         working-directory: backend-fastapi
