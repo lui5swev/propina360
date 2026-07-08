@@ -1,0 +1,50 @@
+{
+  "artifact_check": {
+    "blocking_findings": 0,
+    "missing": [],
+    "required": [
+      "work_order.json",
+      "constitution.md",
+      "spec.md",
+      "clarifications.md",
+      "checklist.md",
+      "context-pack.json",
+      "plan.md",
+      "tasks.md",
+      "analyze-report.md",
+      "implementation-report.md",
+      "factory-skill-manifest.json",
+      "factory-tool-manifest.json",
+      "frontend-template-policy.md",
+      "frontend-template-manifest.json",
+      "project-isolation-policy.md",
+      "project-manifest.json",
+      "project-memory-policy.json",
+      "project-sandboxes.json",
+      "dev-materialization-manifest.json"
+    ]
+  },
+  "coverage_gate": "principle_coverage_100_percent",
+  "dev_materialization": {
+    "manifest": "dev-materialization-manifest.json",
+    "status": "pass"
+  },
+  "factory_skills": {
+    "errors": [],
+    "status": "pass"
+  },
+  "frontend_template": {
+    "errors": [],
+    "status": "pass"
+  },
+  "project_isolation": {
+    "errors": [],
+    "status": "pass"
+  },
+  "static_policy": {
+    "blocking_findings": 0,
+    "findings": []
+  },
+  "status": "pass",
+  "tests": "see pytest/unittest evidence from repository run"
+}

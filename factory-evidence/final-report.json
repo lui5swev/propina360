@@ -1,0 +1,663 @@
+{
+  "budget_exceeded": false,
+  "critical_checks_passed_pct": 100,
+  "evidence_coverage_critical_claims": 100,
+  "factory_skills": {
+    "codex_skill_path": "skills/webforge-factory/SKILL.md",
+    "codex_skill_present": true,
+    "skills": [
+      {
+        "evidence": [
+          "skills/webforge-factory/SKILL.md",
+          "factory-skill-manifest.json"
+        ],
+        "gates": [
+          "schema",
+          "final_format"
+        ],
+        "name": "Codex WEBFORGE Skill",
+        "phases": [
+          "intake",
+          "plan",
+          "validate",
+          "close"
+        ],
+        "purpose": "Expose the WEBFORGE SDD factory as a reusable Codex skill.",
+        "skill_id": "skill.webforge.codex"
+      },
+      {
+        "evidence": [
+          "constitution.md",
+          "principle-ledger.json"
+        ],
+        "gates": [
+          "constitution"
+        ],
+        "name": "Constitution P01-P12",
+        "phases": [
+          "constitution"
+        ],
+        "purpose": "Instantiate and verify the 12 operating principles.",
+        "skill_id": "skill.constitution_12p"
+      },
+      {
+        "evidence": [
+          "project-isolation-policy.md",
+          "project-manifest.json",
+          "project-sandboxes.json"
+        ],
+        "gates": [
+          "project_isolation"
+        ],
+        "name": "Project Isolation",
+        "phases": [
+          "intake",
+          "implement",
+          "validate"
+        ],
+        "purpose": "Create project/<project_id> with private memory, learning, versions, DEV and QA.",
+        "skill_id": "skill.project_isolation"
+      },
+      {
+        "evidence": [
+          "dev-materialization-manifest.json",
+          "tool-logs.jsonl"
+        ],
+        "gates": [
+          "sandbox",
+          "tool-output"
+        ],
+        "name": "DEV Bundle Materializer",
+        "phases": [
+          "implement",
+          "validate"
+        ],
+        "purpose": "Write implementation bundles only through the P12/INV isolation API into the DEV workspace.",
+        "skill_id": "skill.dev_materializer"
+      },
+      {
+        "evidence": [
+          "frontend-template-policy.md",
+          "frontend-template-manifest.json"
+        ],
+        "gates": [
+          "frontend_template"
+        ],
+        "name": "Mandatory PLANTILLA_FRONTEND",
+        "phases": [
+          "intake",
+          "plan",
+          "implement",
+          "validate"
+        ],
+        "purpose": "Bind PLANTILLA_FRONTEND to every project, version and sandbox.",
+        "skill_id": "skill.frontend_template"
+      },
+      {
+        "evidence": [
+          "context-pack.json",
+          "rag-index-manifest.json",
+          "evidence-register.md"
+        ],
+        "gates": [
+          "context",
+          "evidence"
+        ],
+        "name": "Evidence Context Pack",
+        "phases": [
+          "context"
+        ],
+        "purpose": "Build minimal context packs from authorized hashed evidence.",
+        "skill_id": "skill.context_rag"
+      },
+      {
+        "evidence": [
+          "validation-report.json",
+          "tool-registry.json",
+          "tool-logs.jsonl"
+        ],
+        "gates": [
+          "tests",
+          "coverage"
+        ],
+        "name": "Deterministic Validation Tools",
+        "phases": [
+          "validate"
+        ],
+        "purpose": "Run allowlisted validators and artifact completeness checks.",
+        "skill_id": "skill.validation_tools"
+      },
+      {
+        "evidence": [
+          "security-review.md",
+          "secrets-report.json",
+          "dependency-report.json",
+          "sbom.json"
+        ],
+        "gates": [
+          "secrets",
+          "dependency",
+          "sbom"
+        ],
+        "name": "Security and Supply Chain",
+        "phases": [
+          "security"
+        ],
+        "purpose": "Run secret/dependency/SBOM controls before closing.",
+        "skill_id": "skill.security_supply_chain"
+      },
+      {
+        "evidence": [
+          "deploy-plan.md",
+          "rollback-plan.md",
+          "billing-ledger.json",
+          "log.jsonl"
+        ],
+        "gates": [
+          "rollback",
+          "observability",
+          "learning"
+        ],
+        "name": "Release and Observability",
+        "phases": [
+          "deploy_checkpoint",
+          "observe",
+          "close"
+        ],
+        "purpose": "Block deploy without approval and emit logs, metrics and billing ledger.",
+        "skill_id": "skill.release_observability"
+      }
+    ],
+    "version": "skills.webforge.v1"
+  },
+  "factory_tools": {
+    "default": "deny_unregistered_tools",
+    "tools": [
+      {
+        "gate": "sandbox",
+        "purpose": "DEV sandbox bundle materialization through P12/INV isolation API",
+        "timeout_seconds": 30,
+        "tool_id": "tool.sandbox.dev_materialize",
+        "writes": true
+      },
+      {
+        "gate": "secrets",
+        "purpose": "Secret scan",
+        "timeout_seconds": 30,
+        "tool_id": "tool.security.secrets",
+        "writes": true
+      },
+      {
+        "gate": "dependency",
+        "purpose": "Dependency manifest scan",
+        "timeout_seconds": 30,
+        "tool_id": "tool.security.deps",
+        "writes": true
+      },
+      {
+        "gate": "sbom",
+        "purpose": "SBOM generation",
+        "timeout_seconds": 30,
+        "tool_id": "tool.sbom.generate",
+        "writes": true
+      },
+      {
+        "gate": "policy",
+        "purpose": "Static policy scan",
+        "timeout_seconds": 30,
+        "tool_id": "tool.policy.static",
+        "writes": true
+      },
+      {
+        "gate": "final_format",
+        "purpose": "Artifact completeness",
+        "timeout_seconds": 30,
+        "tool_id": "tool.validation.artifacts",
+        "writes": true
+      }
+    ],
+    "version": "toolreg.webforge.v1"
+  },
+  "final_artifacts": [
+    "state.json",
+    "log.jsonl",
+    "evidence-register.md",
+    "context-pack.json",
+    "validation-report.json",
+    "security-review.md",
+    "traceability-matrix.md",
+    "billing-ledger.json",
+    "factory-skill-manifest.json",
+    "factory-tool-manifest.json",
+    "frontend-template-manifest.json",
+    "frontend-template-policy.md",
+    "project-isolation-policy.md",
+    "project-manifest.json",
+    "project-memory-policy.json",
+    "project-sandboxes.json",
+    "dev-materialization-manifest.json",
+    "final-report.json"
+  ],
+  "frontend_template": {
+    "applies_to": "all_projects_all_versions_all_sandboxes",
+    "hash": "sha256:441588b4a0827b70f2c31dee5aeef7d1410ad6c1525b09876218a2bfc5cc9be8",
+    "mandatory": true,
+    "required_files": [
+      "README.md",
+      "AGENTS.md",
+      "HANDOFF-REACT.md",
+      "Intranet Agora.dc.html"
+    ],
+    "source": "PLANTILLA_FRONTEND",
+    "template_name": "PLANTILLA_FRONTEND"
+  },
+  "missing_final_artifacts": [],
+  "phase_count": 16,
+  "phase_status": {
+    "analyze": "pass",
+    "checklist": "pass",
+    "clarify": "pass",
+    "close": "pass",
+    "constitution": "pass",
+    "context": "pass",
+    "deploy_checkpoint": "pass",
+    "implement": "pass",
+    "intake": "pass",
+    "observe": "pass",
+    "plan": "pass",
+    "pr_handoff": "pass",
+    "security": "pass",
+    "specify": "pass",
+    "tasks": "pass",
+    "validate": "pass"
+  },
+  "policy_denied_open": 0,
+  "principle_coverage": {
+    "P01": {
+      "evidence": [
+        "billing-ledger.json",
+        "final-report.json",
+        "work_order.json"
+      ],
+      "gates": [
+        "schema",
+        "budget",
+        "final_format"
+      ],
+      "principle": "Maxima reproducibilidad practica",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P02": {
+      "evidence": [
+        "clarifications.md",
+        "evidence-register.md",
+        "frontend-template-manifest.json",
+        "frontend-template-policy.md",
+        "plan.md",
+        "project-sandboxes.json",
+        "spec.md"
+      ],
+      "gates": [
+        "frontend_template",
+        "spec",
+        "clarification",
+        "evidence",
+        "plan_validation",
+        "frontend_template",
+        "frontend_template",
+        "frontend_template"
+      ],
+      "principle": "No invencion",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P03": {
+      "evidence": [
+        "context-pack.json",
+        "project-isolation-policy.md",
+        "project-manifest.json",
+        "project-memory-policy.json",
+        "project-sandboxes.json",
+        "secrets-report.json",
+        "validation-report.json"
+      ],
+      "gates": [
+        "project_isolation",
+        "context",
+        "project_isolation",
+        "project_isolation",
+        "secrets"
+      ],
+      "principle": "Memoria/contexto limpio",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P04": {
+      "evidence": [
+        "context-pack.json",
+        "evidence-register.md"
+      ],
+      "gates": [
+        "context",
+        "evidence"
+      ],
+      "principle": "RAG/index/cache",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P05": {
+      "evidence": [
+        "constitution.md",
+        "diff-report.json",
+        "factory-skill-manifest.json",
+        "factory-tool-manifest.json",
+        "frontend-template-manifest.json",
+        "frontend-template-policy.md",
+        "project-isolation-policy.md",
+        "project-manifest.json",
+        "project-memory-policy.json",
+        "project-sandboxes.json",
+        "validation-report.json"
+      ],
+      "gates": [
+        "project_isolation",
+        "frontend_template",
+        "factory_skills",
+        "constitution",
+        "frontend_template",
+        "factory_skills",
+        "policy",
+        "project_isolation",
+        "frontend_template",
+        "factory_skills",
+        "project_isolation",
+        "frontend_template",
+        "factory_skills"
+      ],
+      "principle": "ARNES/orquestador/agentes/skills",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P06": {
+      "evidence": [
+        "dev-materialization-manifest.json",
+        "factory-skill-manifest.json",
+        "factory-tool-manifest.json",
+        "sandbox-policy.md",
+        "tool-logs.jsonl",
+        "validation-report.json"
+      ],
+      "gates": [
+        "factory_skills",
+        "sandbox",
+        "factory_skills",
+        "sandbox",
+        "factory_skills",
+        "tests",
+        "sandbox",
+        "factory_skills"
+      ],
+      "principle": "Tools deterministas",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P07": {
+      "evidence": [
+        "Aprendizaje.md",
+        "approval-matrix.md",
+        "project-memory-policy.json"
+      ],
+      "gates": [
+        "human_approval",
+        "learning"
+      ],
+      "principle": "Aprendizaje gobernado",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P08": {
+      "evidence": [
+        "analyze-report.md",
+        "checklist.md",
+        "clarifications.md",
+        "constitution.md",
+        "context-pack.json",
+        "diff-report.json",
+        "factory-skill-manifest.json",
+        "factory-tool-manifest.json",
+        "frontend-template-manifest.json",
+        "frontend-template-policy.md",
+        "plan.md",
+        "principle-ledger.json",
+        "project-isolation-policy.md",
+        "project-manifest.json",
+        "project-memory-policy.json",
+        "project-sandboxes.json",
+        "spec.md",
+        "tasks.md",
+        "validation-report.json",
+        "work_order.json"
+      ],
+      "gates": [
+        "schema",
+        "project_isolation",
+        "frontend_template",
+        "factory_skills",
+        "constitution",
+        "spec",
+        "clarification",
+        "checklist",
+        "context",
+        "plan_validation",
+        "frontend_template",
+        "factory_skills",
+        "tasks",
+        "analyze",
+        "policy",
+        "project_isolation",
+        "frontend_template",
+        "factory_skills",
+        "tests",
+        "coverage",
+        "project_isolation",
+        "frontend_template",
+        "factory_skills"
+      ],
+      "principle": "Gates por fase",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P09": {
+      "evidence": [
+        "billing-ledger.json",
+        "log.jsonl"
+      ],
+      "gates": [
+        "observability"
+      ],
+      "principle": "Logs/trazas",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P10": {
+      "evidence": [
+        "analyze-report.md",
+        "constitution.md",
+        "final-report.json",
+        "tasks.md"
+      ],
+      "gates": [
+        "constitution",
+        "tasks",
+        "analyze",
+        "final_format"
+      ],
+      "principle": "Workflows SDD",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P11": {
+      "evidence": [
+        "approval-matrix.md",
+        "mcp-policy.yaml"
+      ],
+      "gates": [
+        "mcp_policy",
+        "human_approval"
+      ],
+      "principle": "MCP gobernado",
+      "required_evidence_present": true,
+      "status": "pass"
+    },
+    "P12": {
+      "evidence": [
+        "billing-ledger.json",
+        "billing-policy.yaml",
+        "dependency-report.json",
+        "deploy-plan.md",
+        "dev-materialization-manifest.json",
+        "frontend-template-manifest.json",
+        "frontend-template-policy.md",
+        "project-isolation-policy.md",
+        "project-manifest.json",
+        "project-memory-policy.json",
+        "project-sandboxes.json",
+        "rollback-plan.md",
+        "sandbox-policy.md",
+        "sbom.json",
+        "secrets-report.json",
+        "tool-logs.jsonl",
+        "validation-report.json"
+      ],
+      "gates": [
+        "budget",
+        "project_isolation",
+        "frontend_template",
+        "dependency",
+        "sandbox",
+        "frontend_template",
+        "sandbox",
+        "project_isolation",
+        "frontend_template",
+        "sandbox",
+        "project_isolation",
+        "frontend_template",
+        "secrets",
+        "dependency",
+        "sbom",
+        "rollback"
+      ],
+      "principle": "Seguridad/escalabilidad",
+      "required_evidence_present": true,
+      "status": "pass"
+    }
+  },
+  "project_isolation": {
+    "policy_id": "webforge.project_isolation.v1",
+    "project_id": "propina360",
+    "project_root": "project/propina360",
+    "project_root_name": "project",
+    "rules": {
+      "all_project_work_must_stay_under_project_root": true,
+      "factory_learning_write_allowed": false,
+      "factory_memory_read_allowed": false,
+      "frontend_template_hash": "sha256:441588b4a0827b70f2c31dee5aeef7d1410ad6c1525b09876218a2bfc5cc9be8",
+      "frontend_template_name": "PLANTILLA_FRONTEND",
+      "frontend_template_required": true,
+      "frontend_template_source": "PLANTILLA_FRONTEND",
+      "incremental_versions_root": "project/propina360/versions",
+      "project_memory_shared_with_factory": false,
+      "sandbox_clone_source": "project/propina360/versions/v0001",
+      "sandbox_dev_and_qa_must_be_independent": true,
+      "sandbox_dev_required": true,
+      "sandbox_qa_required": true
+    },
+    "version": "v0001"
+  },
+  "project_sandboxes": {
+    "clone_source_hash": "sha256:9399ae3166c150fddbfdc3f421838d13694bd9521712e31de68860f74acb7b7e",
+    "current_version": "v0001",
+    "project_id": "propina360",
+    "sandboxes": [
+      {
+        "autonomous": "true",
+        "clone_source": "project/propina360/versions/v0001",
+        "frontend_template": "PLANTILLA_FRONTEND",
+        "frontend_template_hash": "sha256:441588b4a0827b70f2c31dee5aeef7d1410ad6c1525b09876218a2bfc5cc9be8",
+        "frontend_template_required": "true",
+        "frontend_template_source": "PLANTILLA_FRONTEND",
+        "learning_path": "project/propina360/sandboxes/DEV/learning",
+        "memory_path": "project/propina360/sandboxes/DEV/memory",
+        "name": "DEV",
+        "path": "project/propina360/sandboxes/DEV",
+        "sandbox_id": "propina360-dev-v0001",
+        "shared_with_factory": "false",
+        "version": "v0001"
+      },
+      {
+        "autonomous": "true",
+        "clone_source": "project/propina360/versions/v0001",
+        "frontend_template": "PLANTILLA_FRONTEND",
+        "frontend_template_hash": "sha256:441588b4a0827b70f2c31dee5aeef7d1410ad6c1525b09876218a2bfc5cc9be8",
+        "frontend_template_required": "true",
+        "frontend_template_source": "PLANTILLA_FRONTEND",
+        "learning_path": "project/propina360/sandboxes/QA/learning",
+        "memory_path": "project/propina360/sandboxes/QA/memory",
+        "name": "QA",
+        "path": "project/propina360/sandboxes/QA",
+        "sandbox_id": "propina360-qa-v0001",
+        "shared_with_factory": "false",
+        "version": "v0001"
+      }
+    ]
+  },
+  "project_workspace": {
+    "current_version": "v0001",
+    "frontend_template": {
+      "applies_to": "all_projects_all_versions_all_sandboxes",
+      "hash": "sha256:441588b4a0827b70f2c31dee5aeef7d1410ad6c1525b09876218a2bfc5cc9be8",
+      "mandatory": true,
+      "required_files": [
+        "README.md",
+        "AGENTS.md",
+        "HANDOFF-REACT.md",
+        "Intranet Agora.dc.html"
+      ],
+      "source": "PLANTILLA_FRONTEND",
+      "template_name": "PLANTILLA_FRONTEND"
+    },
+    "learning_root": "project/propina360/learning",
+    "memory_root": "project/propina360/memory",
+    "project_id": "propina360",
+    "project_root": "project/propina360",
+    "sandboxes_root": "project/propina360/sandboxes",
+    "shared_with_factory": false,
+    "versions_root": "project/propina360/versions"
+  },
+  "run_id": "RUN-WEBFORGE-d77c9614723c",
+  "secrets_detected": 0,
+  "security_high_critical_open": 0,
+  "status": "complete",
+  "unapproved_mcp_invocations": 0,
+  "unsafe_action_without_approval": 0,
+  "workflow_phases": [
+    "intake",
+    "constitution",
+    "specify",
+    "clarify",
+    "checklist",
+    "context",
+    "plan",
+    "tasks",
+    "analyze",
+    "implement",
+    "validate",
+    "security",
+    "pr_handoff",
+    "deploy_checkpoint",
+    "observe",
+    "close"
+  ],
+  "workflow_version": "wf.webforge.sdd.v1"
+}

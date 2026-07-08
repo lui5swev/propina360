@@ -1,0 +1,152 @@
+{
+  "api": "webforge.isolation.p12_inv.v1",
+  "blocking_findings": 0,
+  "bundle": {
+    "file_count": 21,
+    "total_bytes": 102037
+  },
+  "errors": [],
+  "policy": {
+    "absolute_paths_denied": true,
+    "external_writes": 0,
+    "path_traversal_denied": true,
+    "production_data": false,
+    "reserved_workspace_files_denied": [
+      "PLANTILLA_FRONTEND.md"
+    ],
+    "secrets_denied": true,
+    "target_scope": "project_sandbox_dev_workspace_only"
+  },
+  "sandbox": "DEV",
+  "sandbox_id": "propina360-dev-v0001",
+  "status": "pass",
+  "workspace_root": "project/propina360/sandboxes/DEV/workspace",
+  "writes": [
+    {
+      "action": "updated",
+      "bytes": 1435,
+      "path": "README.md",
+      "sha256": "sha256:97fe6a8c3ada063ae35561ee40c1a9ed47d7dccd2c1b31b6b7d1671b36357bbc"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 1,
+      "path": "backend-fastapi/app/__init__.py",
+      "sha256": "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 53122,
+      "path": "backend-fastapi/app/main.py",
+      "sha256": "sha256:a6451d52a83444a8a4131b633ca1c536516394474c3b6a372655dad6d77f8f74"
+    },
+    {
+      "action": "updated",
+      "bytes": 341,
+      "path": "backend-fastapi/app/static/index.html",
+      "sha256": "sha256:d2b8c867f1bbb3eeee93c650fe2bce765ead2bb4da6758fa2ed5f887245c0d11"
+    },
+    {
+      "action": "updated",
+      "bytes": 21775,
+      "path": "backend-fastapi/app/static/app.js",
+      "sha256": "sha256:2a02f2586242f5b3f562df0fd154af44b755378152c1b04f06415b09dd0c3921"
+    },
+    {
+      "action": "updated",
+      "bytes": 5423,
+      "path": "backend-fastapi/app/static/styles.css",
+      "sha256": "sha256:b48c8f8973ac13ca6653459b456ec468966289a8ed09aa1ba39e2dcad8ed35d5"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 5772,
+      "path": "backend-fastapi/tests/test_propina360.py",
+      "sha256": "sha256:2444108f03acdea1d1f2d8fcb0da665c82e7646dab5f30e427e02a9a2f1e587f"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 34,
+      "path": "backend-fastapi/requirements.txt",
+      "sha256": "sha256:01bc9b592bd35f489e5a71d8925f97d3eef1743ada1e826dd59bbb56e916cc29"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 1435,
+      "path": "backend-fastapi/README.md",
+      "sha256": "sha256:97fe6a8c3ada063ae35561ee40c1a9ed47d7dccd2c1b31b6b7d1671b36357bbc"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 6962,
+      "path": "database-mysql-mariadb/schema.sql",
+      "sha256": "sha256:0e1fa24ccc6c0c7b3ba51214b79dcef599642d3df7c6f3a1843099a7264f750d"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 1603,
+      "path": "docs/consumo_tokens.md",
+      "sha256": "sha256:9cb53eea642afc99353f9ae63265a8c5f45271453d9c0585c7081870be296b71"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 1603,
+      "path": "docs/optimizacion_tokens_fabrica.md",
+      "sha256": "sha256:9cb53eea642afc99353f9ae63265a8c5f45271453d9c0585c7081870be296b71"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 456,
+      "path": "docs/endpoints_api.md",
+      "sha256": "sha256:2ac28964fa39a96232d88dfdf393321902c372c06ed806fcc1190ed28728f01c"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 321,
+      "path": "docs/documento_auditoria_tecnica.md",
+      "sha256": "sha256:969b811d2e68fb8c63444a5e36372a6b220b55ff2a846df27495cfa861e1de19"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 293,
+      "path": "docs/documento_reportes.md",
+      "sha256": "sha256:f51b7d17a47f94cab366563149b3c0e41b3d417548098cf45647f79a1a28ed38"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 444,
+      "path": "docs/modelo_datos.md",
+      "sha256": "sha256:9c5a482b08decdd877288733bba318a0fe5d4bc2fbc969d6f91f635edf67f9e5"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 128,
+      "path": "docs/plan_pruebas.md",
+      "sha256": "sha256:07d696fa55957ad43331b6b49a41055007df6b391dbb2b83ab7504a2288a82a0"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 262,
+      "path": "frontend-react-bootstrap/package.json",
+      "sha256": "sha256:313537bbfe34881a36275cb41afb25bfe59c3263d6b593668e99cd8f29829b51"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 390,
+      "path": "frontend-react-bootstrap/src/App.jsx",
+      "sha256": "sha256:ce616112c44b5329b8064238a1c0f19fce5ab211e737dab244219f149a2e847c"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 164,
+      "path": "frontend-react-bootstrap/src/main.jsx",
+      "sha256": "sha256:7fa6393a35e01903ed7a64af77f5aa5bbdccb8f7afa7500478e120d2746261d3"
+    },
+    {
+      "action": "unchanged",
+      "bytes": 73,
+      "path": "frontend-react-bootstrap/index.html",
+      "sha256": "sha256:a19d4555fa9f363fb6d9c7a86877653059be5d0661653a61bb82926a1d1a4066"
+    }
+  ]
+}

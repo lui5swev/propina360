@@ -1,0 +1,6 @@
+# PLANTILLA_FRONTEND
+
+Sandbox: DEV
+Uso: obligatorio.
+Source: `PLANTILLA_FRONTEND`
+Hash: `sha256:441588b4a0827b70f2c31dee5aeef7d1410ad6c1525b09876218a2bfc5cc9be8`

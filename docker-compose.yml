@@ -1,0 +1,15 @@
+services:
+  propina360:
+    build: .
+    container_name: propina360
+    ports:
+      - "18765:18765"
+    environment:
+      PROPINA360_DB_URL: sqlite:////data/propina360.db
+      PROPINA360_SIGNING_KEY: change-me-local
+    volumes:
+      - propina360_data:/data
+    restart: unless-stopped
+
+volumes:
+  propina360_data:
