@@ -2,103 +2,142 @@ name: Deploy Propina360 to EC2
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
-
-permissions:
-  contents: read
+    inputs:
+      ref:
+        description: Git ref to deploy
+        required: false
+        default: main
 
 jobs:
-  test:
-    name: Test
+  deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install backend dependencies
-        working-directory: backend-fastapi
-        run: pip install -r requirements.txt
-
       - name: Run backend tests
         working-directory: backend-fastapi
-        run: PYTHONPATH=. python -m pytest -q
-
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: test
-    environment: production
-
-    env:
-      EC2_HOST: ${{ secrets.EC2_HOST }}
-      EC2_USER: ${{ secrets.EC2_USER }}
-      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-      EC2_APP_DIR: '/opt/propina360'
-      PROPINA360_PORT: '18765'
-      PROPINA360_SIGNING_KEY: ${{ secrets.PROPINA360_SIGNING_KEY }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate deployment configuration
         run: |
-          test -n "$EC2_HOST"
-          test -n "$EC2_USER"
-          test -n "$EC2_SSH_KEY"
-          test -n "$PROPINA360_SIGNING_KEY"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          PYTHONPATH=. python -m pytest -q
 
-      - name: Prepare SSH
+      - name: Create deploy bundle
         run: |
-          set -euo pipefail
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
-          chmod 600 ~/.ssh/ec2_key
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='*/__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='*.db' \
+            --exclude='*/.pytest_cache' \
+            -czf propina360-deploy.tgz \
+            Dockerfile \
+            docker-compose.yml \
+            backend-fastapi
 
-          if ! grep -qE -- '-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----' ~/.ssh/ec2_key; then
-            echo "::error::EC2_SSH_KEY debe incluir el contenido completo del archivo .pem, incluyendo BEGIN/END PRIVATE KEY."
-            exit 1
-          fi
+      - name: Copy bundle to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || '22' }}
+          source: propina360-deploy.tgz
+          target: /tmp
 
-          if ! ssh-keygen -y -f ~/.ssh/ec2_key > /dev/null; then
-            echo "::error::EC2_SSH_KEY no es una llave privada SSH valida. Revisa que el secret no tenga texto extra, comillas, prompts de terminal ni saltos de linea perdidos."
-            exit 1
-          fi
+      - name: Deploy on EC2 with Docker
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_ROOT: ${{ vars.EC2_APP_DIR || '/opt/propina360' }}
+          PROPINA360_PORT: ${{ vars.PROPINA360_PORT || '18765' }}
+          PROPINA360_SIGNING_KEY: ${{ secrets.PROPINA360_SIGNING_KEY }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || '22' }}
+          envs: APP_ROOT,PROPINA360_PORT,PROPINA360_SIGNING_KEY
+          script: |
+            set -euo pipefail
 
-          echo "::notice::Resolviendo EC2_HOST..."
-          getent hosts "$EC2_HOST"
+            : "${PROPINA360_SIGNING_KEY:?Missing required GitHub secret PROPINA360_SIGNING_KEY}"
+            : "${PROPINA360_PORT:=18765}"
+            : "${APP_ROOT:=/opt/propina360}"
 
-          echo "::notice::Probando TCP 22 desde GitHub Actions hacia EC2..."
-          if ! timeout 15 bash -c ":</dev/tcp/$EC2_HOST/22"; then
-            echo "::error::GitHub Actions no puede conectar al puerto 22 de EC2. Si SSH solo esta abierto para tu IP local, el runner no podra entrar. Abre temporalmente TCP 22 a 0.0.0.0/0 o usa un origen que incluya las IPs de GitHub Actions."
-            exit 1
-          fi
+            CURRENT_DIR="$APP_ROOT/current"
+            RELEASE_DIR="$APP_ROOT/release"
+            ARCHIVE=/tmp/propina360-deploy.tgz
 
-          ssh-keyscan -T 15 -H "$EC2_HOST" >> ~/.ssh/known_hosts
+            if ! command -v docker >/dev/null 2>&1; then
+              curl -fsSL https://get.docker.com | sudo sh
+              sudo usermod -aG docker "$USER" || true
+            fi
 
-      - name: Prepare runtime environment
-        run: |
-          printf 'PROPINA360_PORT=%s\n' "$PROPINA360_PORT" > .env
-          printf 'PROPINA360_SIGNING_KEY=%s\n' "$PROPINA360_SIGNING_KEY" >> .env
+            sudo systemctl enable docker || true
+            sudo systemctl start docker
 
-      - name: Upload application bundle
-        run: |
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "mkdir -p '$EC2_APP_DIR'"
-          tar -czf /tmp/propina360-deploy.tgz Dockerfile docker-compose.yml backend-fastapi .env
-          scp -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new /tmp/propina360-deploy.tgz "$EC2_USER@$EC2_HOST:/tmp/propina360-deploy.tgz"
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "tar -xzf /tmp/propina360-deploy.tgz -C '$EC2_APP_DIR' && rm /tmp/propina360-deploy.tgz"
+            docker_cmd() {
+              if docker info >/dev/null 2>&1; then
+                docker "$@"
+              else
+                sudo docker "$@"
+              fi
+            }
 
-      - name: Restart Propina360
-        run: |
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && docker compose up -d --build --remove-orphans && docker image prune -f"
+            if ! docker_cmd compose version >/dev/null 2>&1; then
+              arch="$(uname -m)"
+              case "$arch" in
+                x86_64|amd64) compose_arch=x86_64 ;;
+                aarch64|arm64) compose_arch=aarch64 ;;
+                *) echo "Unsupported architecture for Docker Compose plugin: $arch" >&2; exit 1 ;;
+              esac
 
-      - name: Health check
-        run: |
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "curl -fsS http://127.0.0.1:${PROPINA360_PORT}/api/health"
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
+              sudo curl -SL \
+                "https://github.com/docker/compose/releases/download/v2.39.2/docker-compose-linux-${compose_arch}" \
+                -o /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+            fi
+
+            sudo mkdir -p "$APP_ROOT"
+            sudo chown -R "$USER":"$USER" "$APP_ROOT"
+
+            if [ -d "$CURRENT_DIR" ]; then
+              cd "$CURRENT_DIR"
+              docker_cmd compose down --remove-orphans || true
+            fi
+
+            rm -rf "$RELEASE_DIR"
+            mkdir -p "$RELEASE_DIR"
+            tar -xzf "$ARCHIVE" -C "$RELEASE_DIR"
+
+            rm -rf "$CURRENT_DIR"
+            mv "$RELEASE_DIR" "$CURRENT_DIR"
+            cd "$CURRENT_DIR"
+
+            umask 077
+            cat > .env <<EOF
+            PROPINA360_PORT=$PROPINA360_PORT
+            PROPINA360_SIGNING_KEY=$PROPINA360_SIGNING_KEY
+            EOF
+
+            docker_cmd container prune -f || true
+            docker_cmd compose up -d --build --remove-orphans
+
+            sleep 10
+            docker_cmd compose ps
+            curl --fail --silent --show-error "http://127.0.0.1:${PROPINA360_PORT}/api/health"
