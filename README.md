@@ -69,6 +69,13 @@ git remote add origin <URL_DEL_REPOSITORIO>
 git push -u origin main
 ```
 
+## Despliegue en EC2
+
+El repositorio incluye un workflow de GitHub Actions para desplegar en una instancia EC2 con Docker Compose:
+
+- Workflow: `.github/workflows/deploy-ec2.yml`
+- Guia: `docs/deploy_ec2_github_actions.md`
+
 ## Notas de seguridad
 
 - La base SQLite local no se versiona.
