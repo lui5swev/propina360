@@ -72,10 +72,16 @@ jobs:
             exit 1
           fi
 
-          if ! timeout 15 ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts; then
-            echo "::error::No se pudo leer el host key de EC2. Revisa EC2_HOST, que la instancia este encendida y que el Security Group permita TCP 22."
+          echo "::notice::Resolviendo EC2_HOST..."
+          getent hosts "$EC2_HOST"
+
+          echo "::notice::Probando TCP 22 desde GitHub Actions hacia EC2..."
+          if ! timeout 15 bash -c ":</dev/tcp/$EC2_HOST/22"; then
+            echo "::error::GitHub Actions no puede conectar al puerto 22 de EC2. Si SSH solo esta abierto para tu IP local, el runner no podra entrar. Abre temporalmente TCP 22 a 0.0.0.0/0 o usa un origen que incluya las IPs de GitHub Actions."
             exit 1
           fi
+
+          ssh-keyscan -T 15 -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
       - name: Prepare runtime environment
         run: |
@@ -84,15 +90,15 @@ jobs:
 
       - name: Upload application bundle
         run: |
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes "$EC2_USER@$EC2_HOST" "mkdir -p '$EC2_APP_DIR'"
+          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "mkdir -p '$EC2_APP_DIR'"
           tar -czf /tmp/propina360-deploy.tgz Dockerfile docker-compose.yml backend-fastapi .env
-          scp -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes /tmp/propina360-deploy.tgz "$EC2_USER@$EC2_HOST:/tmp/propina360-deploy.tgz"
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes "$EC2_USER@$EC2_HOST" "tar -xzf /tmp/propina360-deploy.tgz -C '$EC2_APP_DIR' && rm /tmp/propina360-deploy.tgz"
+          scp -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new /tmp/propina360-deploy.tgz "$EC2_USER@$EC2_HOST:/tmp/propina360-deploy.tgz"
+          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "tar -xzf /tmp/propina360-deploy.tgz -C '$EC2_APP_DIR' && rm /tmp/propina360-deploy.tgz"
 
       - name: Restart Propina360
         run: |
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && docker compose up -d --build --remove-orphans && docker image prune -f"
+          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && docker compose up -d --build --remove-orphans && docker image prune -f"
 
       - name: Health check
         run: |
-          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes "$EC2_USER@$EC2_HOST" "curl -fsS http://127.0.0.1:${PROPINA360_PORT}/api/health"
+          ssh -i ~/.ssh/ec2_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$EC2_USER@$EC2_HOST" "curl -fsS http://127.0.0.1:${PROPINA360_PORT}/api/health"
